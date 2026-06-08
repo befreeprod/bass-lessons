@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bass Student Intake — Let's Get to Know You</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --cream: #f5f0e8;
+    --amber: #d4820a;
+    --amber-light: #f0a830;
+    --amber-pale: #fdf3dc;
+    --rust: #b84a1a;
+    --muted: #6b6355;
+    --line: rgba(212,130,10,0.25);
+    --radius: 4px;
+  }
+
+  body {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  /* Ambient glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 500px;
+    background: radial-gradient(ellipse, rgba(212,130,10,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 40px;
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 28px;
+    height: 1px;
+    background: var(--amber);
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 10vw, 88px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: var(--cream);
+    margin-bottom: 20px;
+  }
+
+  h1 span {
+    color: var(--amber);
+    display: block;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.55);
+    max-width: 480px;
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-bottom: 52px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .progress-label span:last-child { color: var(--amber); }
+
+  .progress-track {
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    border-radius: 1px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* Sections */
+  .section {
+    display: none;
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    color: var(--cream);
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+
+  .section-desc {
+    font-size: 14px;
+    color: rgba(245,240,232,0.45);
+    margin-bottom: 40px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* Fields */
+  .field { margin-bottom: 32px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.6);
+    margin-bottom: 10px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  textarea,
+  select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    appearance: none;
+  }
+
+  input[type="number"] { width: 120px; }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--amber);
+    background: rgba(212,130,10,0.06);
+  }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.65; }
+
+  select option { background: #1a1814; color: var(--cream); }
+
+  /* Pill choices */
+  .pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .pill-input { display: none; }
+
+  .pill-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 18px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    font-size: 13px;
+    color: rgba(245,240,232,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    letter-spacing: 0.02em;
+  }
+
+  .pill-label:hover {
+    border-color: var(--amber);
+    color: var(--amber-light);
+  }
+
+  .pill-input:checked + .pill-label {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* Scale / rating */
+  .scale-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .scale-opt { display: none; }
+
+  .scale-btn {
+    flex: 1;
+    text-align: center;
+    padding: 12px 4px;
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    font-size: 14px;
+    color: rgba(245,240,232,0.5);
+    transition: all 0.15s;
+    margin-right: -1px;
+  }
+
+  .scale-btn:first-of-type { border-radius: var(--radius) 0 0 var(--radius); }
+  .scale-btn:last-of-type  { border-radius: 0 var(--radius) var(--radius) 0; margin-right: 0; }
+
+  .scale-btn:hover { background: rgba(212,130,10,0.1); color: var(--amber-light); border-color: var(--amber); z-index:1; position:relative; }
+
+  .scale-opt:checked + .scale-btn {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+    font-weight: 500;
+    z-index: 2;
+    position: relative;
+  }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+    padding: 0 2px;
+  }
+
+  /* Navigation */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 52px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    font-weight: 500;
+  }
+
+  .btn-next {
+    background: var(--amber);
+    color: var(--ink);
+  }
+
+  .btn-next:hover { background: var(--amber-light); transform: translateX(3px); }
+
+  .btn-back {
+    background: transparent;
+    color: rgba(245,240,232,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .btn-back:hover { color: var(--cream); border-color: rgba(255,255,255,0.25); transform: translateX(-3px); }
+
+  .btn-submit {
+    background: var(--amber);
+    color: var(--ink);
+    padding: 16px 36px;
+    font-size: 13px;
+  }
+
+  .btn-submit:hover { background: var(--amber-light); }
+
+  .step-counter {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* Thank you screen */
+  .thankyou {
+    display: none;
+    text-align: center;
+    padding: 60px 0;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .thankyou.active { display: block; }
+
+  .thankyou-icon {
+    font-size: 56px;
+    margin-bottom: 24px;
+    display: block;
+  }
+
+  .thankyou h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: var(--amber);
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+  }
+
+  .thankyou p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.55);
+    max-width: 420px;
+    margin: 0 auto;
+    font-style: italic;
+  }
+
+  /* Divider rule */
+  .rule {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 36px 0;
+  }
+
+  /* String decoration */
+  .strings {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    align-items: flex-end;
+  }
+
+  .string {
+    width: 2px;
+    border-radius: 1px;
+    background: linear-gradient(to bottom, var(--amber-light), transparent);
+    opacity: 0.3;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="strings">
+      <div class="string" style="height:48px;opacity:0.45"></div>
+      <div class="string" style="height:38px;opacity:0.35"></div>
+      <div class="string" style="height:30px;opacity:0.25"></div>
+      <div class="string" style="height:22px;opacity:0.18"></div>
+    </div>
+    <div class="eyebrow">Bass Guitar Lessons — Student Intake</div>
+    <h1>Tell me<span>your story.</span></h1>
+    <p class="subtitle">Before we play a single note, I want to know who you are, where you're coming from, and where the bass is going to take you.</p>
+  </header>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Your Journey</span>
+      <span id="progress-text">Section 1 of 6</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <!-- ─── SECTION 1: About You ─── -->
+  <div class="section active" id="s1">
+    <div class="section-label">Section 01</div>
+    <div class="section-title">About You</div>
+    <div class="section-desc">The basics — so I know who I'm talking to.</div>
+
+    <div class="field">
+      <label>Full name</label>
+      <input type="text" name="full_name" placeholder="Your name">
+    </div>
+
+    <div class="field">
+      <label>Age</label>
+      <input type="number" name="age" placeholder="e.g. 24" min="8" max="99">
+    </div>
+
+    <div class="field">
+      <label>Where are you based?</label>
+      <input type="text" name="location" placeholder="City / Town">
+    </div>
+
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" name="email" placeholder="your@email.com">
+    </div>
+
+    <div class="field">
+      <label>WhatsApp number</label>
+      <input type="text" name="whatsapp" placeholder="+27 ...">
+    </div>
+
+    <div class="field">
+      <label>How did you hear about these lessons?</label>
+      <div class="pills">
+        <input class="pill-input" type="radio" name="referral" id="r1" value="word_of_mouth"><label class="pill-label" for="r1">Word of mouth</label>
+        <input class="pill-input" type="radio" name="referral" id="r2" value="instagram"><label class="pill-label" for="r2">Instagram</label>
+        <input class="pill-input" type="radio" name="referral" id="r3" value="tiktok"><label class="pill-label" for="r3">TikTok</label>
+        <input class="pill-input" type="radio" name="referral" id="r4" value="facebook"><label class="pill-label" for="r4">Facebook</label>
+        <input class="pill-input" type="radio" name="referral" id="r5" value="youtube"><label class="pill-label" for="r5">YouTube</label>
+        <input class="pill-input" type="radio" name="referral" id="r6" value="other"><label class="pill-label" for="r6">Other</label>
+      </div>
+    </div>
+
+    <div class="nav">
+      <span class="step-counter">1 / 6</span>
+      <button type="button" class="btn btn-next" onclick="goTo(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 2: Experience ─── -->
+  <div class="section" id="s2">
+    <div class="section-label">Section 02</div>
+    <div class="section-title">Your Experience</div>
+    <div class="section-desc">No judgement — this helps me know where to start so we don't waste a minute of your lesson time.</div>
+
+    <div class="field">
+      <label>How would you describe your bass experience?</label>
+      <div class="pills">
+        <input class="pill-input" type="radio" name="experience_level" id="e1" value="complete_beginner"><label class="pill-label" for="e1">Complete beginner</label>
+        <input class="pill-input" type="radio" name="experience_level" id="e2" value="noodled_around"><label class="pill-label" for="e2">I've noodled around</label>
+        <input class="pill-input" type="radio" name="experience_level" id="e3" value="few_months"><label class="pill-label" for="e3">A few months in</label>
+        <input class="pill-input" type="radio" name="experience_level" id="e4" value="1_2_years_self_taught"><label class="pill-label" for="e4">1–2 years self-taught</label>
+        <input class="pill-input" type="radio" name="experience_level" id="e5" value="had_lessons_before"><label class="pill-label" for="e5">I've had lessons before</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Do you own a bass guitar right now?</label>
+      <div class="pills">
+        <input class="pill-input" type="radio" name="owns_bass" id="o1" value="own_bass"><label class="pill-label" for="o1">Yes, my own bass</label>
+        <input class="pill-input" type="radio" name="owns_bass" id="o2" value="borrowing"><label class="pill-label" for="o2">Borrowing one</label>
+        <input class="pill-input" type="radio" name="owns_bass" id="o3" value="not_yet"><label class="pill-label" for="o3">Not yet</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Do you have any other musical experience? (instruments, singing, theory, etc.)</label>
+      <textarea name="musical_experience" placeholder="e.g. I played drums for 3 years in school. I can read basic sheet music..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>How comfortable are you with music theory right now?</label>
+      <div class="scale-row">
+        <input class="scale-opt" type="radio" name="theory_comfort" id="t1" value="1"><label class="scale-btn" for="t1">1</label>
+        <input class="scale-opt" type="radio" name="theory_comfort" id="t2" value="2"><label class="scale-btn" for="t2">2</label>
+        <input class="scale-opt" type="radio" name="theory_comfort" id="t3" value="3"><label class="scale-btn" for="t3">3</label>
+        <input class="scale-opt" type="radio" name="theory_comfort" id="t4" value="4"><label class="scale-btn" for="t4">4</label>
+        <input class="scale-opt" type="radio" name="theory_comfort" id="t5" value="5"><label class="scale-btn" for="t5">5</label>
+      </div>
+      <div class="scale-labels"><span>None at all</span><span>Very comfortable</span></div>
+    </div>
+
+    <div class="nav">
+      <button type="button" class="btn btn-back" onclick="goTo(1)">&larr; Back</button>
+      <span class="step-counter">2 / 6</span>
+      <button type="button" class="btn btn-next" onclick="goTo(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 3: Goals ─── -->
+  <div class="section" id="s3">
+    <div class="section-label">Section 03</div>
+    <div class="section-title">Your Goals</div>
+    <div class="section-desc">What does success look like to you? Be as specific or as vague as you like — there are no wrong answers here.</div>
+
+    <div class="field">
+      <label>Why do you want to learn bass guitar?</label>
+      <textarea name="why_bass" placeholder="e.g. I've always wanted to play in a band. Music has always been in my family and I want to be part of that..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>What do you want to achieve in your first 3 months of lessons?</label>
+      <textarea name="three_month_goal" placeholder="e.g. I want to be able to play through a full song from start to finish without stopping..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>What type of outcome matters most to you right now?</label>
+      <div class="pills">
+        <input class="pill-input" type="checkbox" name="goals" id="g1" value="play_in_band"><label class="pill-label" for="g1">Play in a band</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g2" value="church_worship"><label class="pill-label" for="g2">Play for church / worship</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g3" value="record_music"><label class="pill-label" for="g3">Record music</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g4" value="personal_enjoyment"><label class="pill-label" for="g4">Play for personal enjoyment</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g5" value="understand_music"><label class="pill-label" for="g5">Understand music better</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g6" value="perform_professionally"><label class="pill-label" for="g6">Perform professionally</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g7" value="teach_one_day"><label class="pill-label" for="g7">Teach one day</label>
+        <input class="pill-input" type="checkbox" name="goals" id="g8" value="just_explore"><label class="pill-label" for="g8">Just explore</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>How many hours a week can you realistically practise on your own?</label>
+      <div class="pills">
+        <input class="pill-input" type="radio" name="practice_hours" id="p1" value="less_than_1hr"><label class="pill-label" for="p1">Less than 1 hr</label>
+        <input class="pill-input" type="radio" name="practice_hours" id="p2" value="1_2hrs"><label class="pill-label" for="p2">1–2 hrs</label>
+        <input class="pill-input" type="radio" name="practice_hours" id="p3" value="3_4hrs"><label class="pill-label" for="p3">3–4 hrs</label>
+        <input class="pill-input" type="radio" name="practice_hours" id="p4" value="5plus_hrs"><label class="pill-label" for="p4">5+ hrs</label>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button type="button" class="btn btn-back" onclick="goTo(2)">&larr; Back</button>
+      <span class="step-counter">3 / 6</span>
+      <button type="button" class="btn btn-next" onclick="goTo(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 4: Inspiration ─── -->
+  <div class="section" id="s4">
+    <div class="section-label">Section 04</div>
+    <div class="section-title">Your Inspiration</div>
+    <div class="section-desc">Music is personal. Tell me what moves you — this shapes everything about how we work together.</div>
+
+    <div class="field">
+      <label>Which bassists inspire you? (doesn't have to be famous)</label>
+      <textarea name="inspirations" placeholder="e.g. Flea from RHCP, my uncle who plays at church, Victor Wooten..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>What genres do you love most?</label>
+      <div class="pills">
+        <input class="pill-input" type="checkbox" name="genres" id="gen1" value="rock"><label class="pill-label" for="gen1">Rock</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen2" value="funk"><label class="pill-label" for="gen2">Funk</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen3" value="gospel"><label class="pill-label" for="gen3">Gospel</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen4" value="jazz"><label class="pill-label" for="gen4">Jazz</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen5" value="rnb_soul"><label class="pill-label" for="gen5">R&amp;B / Soul</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen6" value="afrobeats"><label class="pill-label" for="gen6">Afrobeats</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen7" value="pop"><label class="pill-label" for="gen7">Pop</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen8" value="metal"><label class="pill-label" for="gen8">Metal</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen9" value="hip_hop"><label class="pill-label" for="gen9">Hip-hop</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen10" value="amapiano"><label class="pill-label" for="gen10">Amapiano</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen11" value="kwaito"><label class="pill-label" for="gen11">Kwaito</label>
+        <input class="pill-input" type="checkbox" name="genres" id="gen12" value="blues"><label class="pill-label" for="gen12">Blues</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Name one song or bassline you've always dreamed of being able to play</label>
+      <input type="text" name="dream_song" placeholder="e.g. Another One Bites the Dust — Queen">
+    </div>
+
+    <div class="field">
+      <label>Is there a moment in your life that made you think "I need to learn bass"? Tell me about it.</label>
+      <textarea name="spark_moment" placeholder="A concert, a song on the radio, a friend who plays..."></textarea>
+    </div>
+
+    <div class="nav">
+      <button type="button" class="btn btn-back" onclick="goTo(3)">&larr; Back</button>
+      <span class="step-counter">4 / 6</span>
+      <button type="button" class="btn btn-next" onclick="goTo(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 5: The Future ─── -->
+  <div class="section" id="s5">
+    <div class="section-label">Section 05</div>
+    <div class="section-title">Your Future</div>
+    <div class="section-desc">Zoom out. Where does the bass fit into the life you're building?</div>
+
+    <div class="field">
+      <label>Where do you see yourself with the bass guitar in 1–2 years from now?</label>
+      <textarea name="one_two_year_vision" placeholder="e.g. Playing every Sunday at my church. Gigging with a band on weekends. Teaching others..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>In 5 years, what role do you want music to play in your life?</label>
+      <div class="pills">
+        <input class="pill-input" type="radio" name="five_year_role" id="f1" value="passionate_hobby"><label class="pill-label" for="f1">A passionate hobby</label>
+        <input class="pill-input" type="radio" name="five_year_role" id="f2" value="side_income"><label class="pill-label" for="f2">A side income</label>
+        <input class="pill-input" type="radio" name="five_year_role" id="f3" value="full_time_career"><label class="pill-label" for="f3">My full-time career</label>
+        <input class="pill-input" type="radio" name="five_year_role" id="f4" value="dont_know_yet"><label class="pill-label" for="f4">I honestly don't know yet</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>If nothing held you back — no fear, no time limits — what would your wildest bass guitar dream look like?</label>
+      <textarea name="wildest_dream" placeholder="Let loose here. What would you do if you knew you couldn't fail?"></textarea>
+    </div>
+
+    <div class="nav">
+      <button type="button" class="btn btn-back" onclick="goTo(4)">&larr; Back</button>
+      <span class="step-counter">5 / 6</span>
+      <button type="button" class="btn btn-next" onclick="goTo(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 6: Anything Else ─── -->
+  <div class="section" id="s6">
+    <div class="section-label">Section 06</div>
+    <div class="section-title">Anything Else?</div>
+    <div class="section-desc">Last one. Your chance to tell me something I didn't think to ask.</div>
+
+    <div class="field">
+      <label>How do you learn best?</label>
+      <div class="pills">
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls1" value="watch_and_copy"><label class="pill-label" for="ls1">Watch and copy</label>
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls2" value="theory_first"><label class="pill-label" for="ls2">Understand the theory first</label>
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls3" value="feel_and_ear"><label class="pill-label" for="ls3">Learn by feel and ear</label>
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls4" value="lots_of_repetition"><label class="pill-label" for="ls4">Lots of repetition</label>
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls5" value="short_focused_bursts"><label class="pill-label" for="ls5">Short, focused bursts</label>
+        <input class="pill-input" type="checkbox" name="learning_style" id="ls6" value="need_structure"><label class="pill-label" for="ls6">I need structure</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Is there anything about yourself as a learner I should know? (e.g. patience levels, frustration triggers, past struggles with learning)</label>
+      <textarea name="learner_notes" placeholder="Anything that helps me teach you better..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Any questions for me before we get started?</label>
+      <textarea name="questions_for_freeman" placeholder="About the lessons, the curriculum, what to expect..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Anything else you want to share?</label>
+      <textarea name="anything_else" placeholder="Open mic. The floor is yours."></textarea>
+    </div>
+
+    <div class="nav">
+      <button type="button" class="btn btn-back" onclick="goTo(5)">&larr; Back</button>
+      <span class="step-counter">6 / 6</span>
+      <button type="button" class="btn btn-submit" onclick="submit()">Submit &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Thank You -->
+  <div class="thankyou" id="thankyou">
+    <span class="thankyou-icon">🎸</span>
+    <h2>You're In.</h2>
+    <p>Thanks for taking the time to fill this out. I'll be in touch soon to book your first session. Get ready — we're about to lay down some serious grooves.</p>
+  </div>
+
+</div>
+
+<script>
+  const total = 6;
+
+  function goTo(n) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const next = document.getElementById('s' + n);
+    if (next) {
+      next.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    const pct = ((n - 1) / total) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = 'Section ' + n + ' of ' + total;
+  }
+
+  async function submit() {
+    // Collect all named inputs manually (no form tag needed)
+    const data = new FormData();
+
+    // Text, email, number, textarea inputs
+    document.querySelectorAll('input[name]:not([type="radio"]):not([type="checkbox"]), textarea[name], select[name]').forEach(el => {
+      data.append(el.name, el.value);
+    });
+
+    // Radio buttons — get selected value per group
+    const radioGroups = {};
+    document.querySelectorAll('input[type="radio"][name]').forEach(el => {
+      if (!radioGroups[el.name]) radioGroups[el.name] = '';
+      if (el.checked) radioGroups[el.name] = el.value;
+    });
+    Object.entries(radioGroups).forEach(([name, val]) => data.append(name, val || 'Not answered'));
+
+    // Checkboxes — collect all checked values per group as comma-separated
+    const checkGroups = ['goals', 'genres', 'learning_style'];
+    checkGroups.forEach(name => {
+      const checked = [...document.querySelectorAll(`input[type="checkbox"][name="${name}"]:checked`)].map(el => el.value);
+      data.append(name, checked.join(', ') || 'None selected');
+    });
+
+    // Show sending state
+    const submitBtn = document.querySelector('.btn-submit');
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('https://formspree.io/f/mlgknega', {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (res.ok) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('thankyou').classList.add('active');
+        document.getElementById('progress-fill').style.width = '100%';
+        document.getElementById('progress-text').textContent = 'Complete';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const errData = await res.json();
+        console.error('Formspree error:', errData);
+        submitBtn.textContent = 'Submit →';
+        submitBtn.disabled = false;
+        alert('Something went wrong. Please try again or WhatsApp Freeman on 0797398218.');
+      }
+    } catch(err) {
+      console.error('Network error:', err);
+      submitBtn.textContent = 'Submit →';
+      submitBtn.disabled = false;
+      alert('Could not connect. Please check your internet and try again.');
+    }
+  }
+</script>
+</body>
+</html>
